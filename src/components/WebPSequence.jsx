@@ -10,19 +10,19 @@ export default function WebPSequence({ sequencePath = '/frames/pc/', onProgress,
   const imagesRef = useRef([])
   const [isReady, setIsReady] = useState(false)
   const lastDrawableIndexRef = useRef(0)
-  
+
   const progressRef = useRef(0)        // current (lerped)
   const targetProgressRef = useRef(0)  // target from scroll
   const lastReportedRef = useRef(-1)
-  
+
   const TOTAL_FRAMES = 480
-  const READY_FRAME_COUNT = 24
+  const READY_FRAME_COUNT = 12
   const READY_TIMEOUT_MS = 15000
 
   // 1. Preload images
   useEffect(() => {
     console.log(`[WebPSequence] Preloading sequence from: ${sequencePath}`)
-    
+
     // Reset state for new sequence
     setIsReady(false)
     lastDrawableIndexRef.current = 0
@@ -63,7 +63,7 @@ export default function WebPSequence({ sequencePath = '/frames/pc/', onProgress,
       const img = new Image()
       const frameStr = String(i).padStart(4, '0')
       img.src = `${sequencePath}${frameStr}.webp`
-      
+
       img.onload = () => {
         handleSettled()
       }
@@ -135,7 +135,7 @@ export default function WebPSequence({ sequencePath = '/frames/pc/', onProgress,
         TOTAL_FRAMES - 1,
         Math.floor(progressRef.current * TOTAL_FRAMES)
       )
-      
+
       const img = imagesRef.current[frameIndex]
       const fallback = imagesRef.current[lastDrawableIndexRef.current]
       const drawable = img && img.complete && img.naturalWidth > 0
@@ -149,12 +149,12 @@ export default function WebPSequence({ sequencePath = '/frames/pc/', onProgress,
 
         // Clear and draw
         ctx.clearRect(0, 0, canvas.width, canvas.height)
-        
+
         const canvasAspect = canvas.width / canvas.height
         const imgAspect = drawable.width / drawable.height
-        
+
         let drawWidth, drawHeight, offsetX, offsetY
-        
+
         // "Cover" logic: fill the screen, crop edges
         if (canvasAspect > imgAspect) {
           drawWidth = canvas.width
@@ -191,8 +191,9 @@ export default function WebPSequence({ sequencePath = '/frames/pc/', onProgress,
       const canvas = canvasRef.current
       if (!canvas) return
       // Set internal resolution matching logical pixels * scale
-      canvas.width = window.innerWidth * window.devicePixelRatio
-      canvas.height = window.innerHeight * window.devicePixelRatio
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      canvas.width = window.innerWidth * dpr
+      canvas.height = window.innerHeight * dpr
     }
     window.addEventListener('resize', handleResize)
     handleResize()

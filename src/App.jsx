@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import WebPSequence from './components/WebPSequence.jsx'
 import HUD from './components/HUD.jsx'
-import LoadingScreen from './components/LoadingScreen.jsx'
+import ProgressiveLoader from './components/ProgressiveLoader.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 
 /**
  * App — Root component.
@@ -20,7 +21,7 @@ function detectMobile() {
   return isNarrow || isTouchOnly || isMobileUA
 }
 
-export default function App() {
+function AppContent() {
   const [loaded, setLoaded] = useState(false)
   const [loadProgress, setLoadProgress] = useState(0)
   const [scrollProgress, setScrollProgress] = useState(0)
@@ -47,13 +48,11 @@ export default function App() {
 
   return (
     <>
-      {/* Loading Screen */}
-      {!loaded && (
-        <LoadingScreen 
-          progress={loadProgress} 
-          onFinished={() => {}} 
-        />
-      )}
+      {/* Progressive Loader — replaces old splash screen */}
+      <ProgressiveLoader
+        progress={loadProgress}
+        isReady={loaded}
+      />
 
       {/* Frame Sequence Canvas */}
       <div className="canvas-container">
@@ -65,8 +64,16 @@ export default function App() {
         />
       </div>
 
-      {/* HUD — shows logo + register button at end */}
+      {/* HUD — shows navbar + register button at end */}
       {loaded && <HUD scrollProgress={scrollProgress} />}
     </>
+  )
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
   )
 }

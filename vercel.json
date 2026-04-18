@@ -1,0 +1,65 @@
+{
+  "name": "gtr-2026",
+  "version": 2,
+  "env": {
+    "GEMINI_API_KEY": {
+      "description": "Primary Gemini API key",
+      "required": true
+    },
+    "GEMINI_API_KEY_2": {
+      "description": "Backup Gemini API key for failover",
+      "required": false
+    },
+    "GROQ_API_KEY": {
+      "description": "Groq API key - third fallback when Gemini is exhausted",
+      "required": false
+    }
+  },
+  "buildCommand": "npm run check-secrets && npm run build",
+  "outputDirectory": "dist",
+  "public": false,
+  "git": {
+    "deploymentEnabled": false
+  },
+  "functions": {
+    "api/chat.js": {
+      "maxDuration": 15,
+      "memory": 128
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=(), camera=()"
+        }
+      ]
+    }
+  ]
+}

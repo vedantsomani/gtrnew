@@ -1,0 +1,266 @@
+﻿/* ===== CSS Reset & Base ===== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --font-primary: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  
+  --bg-deep: #050510;
+  
+  --accent-primary: #6c5ce7;
+  --accent-secondary: #00cec9;
+  --accent-glow: #a29bfe;
+  
+  --text-primary: #f0f0f8;
+  --text-muted: rgba(240, 240, 248, 0.35);
+  
+  --border-subtle: rgba(255, 255, 255, 0.06);
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Canvas Container ===== */
+.canvas-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+
+/* ===== HUD Overlay ===== */
+.hud-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px 36px;
+}
+
+.hud-top {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.hud-logo {
+  font-family: var(--font-primary);
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Register Button Popup ===== */
+.register-popup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 60px;
+  
+  /* Hidden by default */
+  opacity: 0;
+  transform: translateY(40px) scale(0.85);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.register-popup.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+.register-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 52px;
+  border: none;
+  border-radius: 50px;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ff6b35, #f7c948, #ff6b35);
+  background-size: 200% 200%;
+  animation: registerGradient 3s ease infinite;
+  box-shadow:
+    0 0 30px rgba(255, 107, 53, 0.4),
+    0 0 60px rgba(255, 107, 53, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.register-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow:
+    0 0 50px rgba(255, 107, 53, 0.6),
+    0 0 100px rgba(255, 107, 53, 0.3),
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.register-btn:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+@keyframes registerGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Glow pulse behind the button */
+.register-btn-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 54px;
+  background: linear-gradient(135deg, #ff6b35, #f7c948, #ff6b35);
+  background-size: 200% 200%;
+  animation: registerGradient 3s ease infinite;
+  filter: blur(16px);
+  opacity: 0.5;
+  z-index: -1;
+}
+
+.register-btn-text {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: 0.03em;
+  color: #1a1a2e;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+  z-index: 1;
+}
+
+/* Shimmer effect */
+.register-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  animation: registerShimmer 2.5s ease-in-out infinite;
+}
+
+@keyframes registerShimmer {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* ===== Loading Screen ===== */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg-deep);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading-logo {
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 2rem;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: logoPulse 2s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+.loading-bar-track {
+  width: 200px;
+  height: 3px;
+  background: var(--border-subtle);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.loading-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 12px rgba(108, 92, 231, 0.5);
+}
+
+.loading-text {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .hud-overlay {
+    padding: 16px 20px;
+  }
+  
+  .hud-logo {
+    font-size: 1.1rem;
+  }
+  
+  .register-btn {
+    padding: 14px 36px;
+  }
+  
+  .register-btn-text {
+    font-size: 1rem;
+  }
+  
+  .register-popup {
+    padding-bottom: 40px;
+  }
+}

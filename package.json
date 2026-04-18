@@ -1,20 +1,21 @@
 {
-  "name": "iot-robotics-3d",
+  "name": "gtr-2026",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "npm run check-secrets && vite build",
+    "preview": "vite preview",
+    "check-secrets": "node scripts/check-secrets.js"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.5.0",
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^17.4.2",
+    "groq-sdk": "^1.1.2",
     "gsap": "^3.14.2",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "three": "^0.183.2"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.5.2",
