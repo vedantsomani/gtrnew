@@ -1,30 +1,20 @@
 import React, { useState, useEffect } from 'react'
 
-export default function LoadingScreen({ onFinished }) {
-  const [progress, setProgress] = useState(0)
-  const [hidden, setHidden] = useState(false)
+export default function LoadingScreen({ progress = 0, onFinished }) {
+  const [shouldHide, setShouldHide] = useState(false)
 
   useEffect(() => {
-    // Simulate a minimum loading delay so the screen doesn't flash
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setTimeout(() => {
-            setHidden(true)
-            setTimeout(() => onFinished?.(), 800)
-          }, 400)
-          return 100
-        }
-        return prev + Math.random() * 15 + 5
-      })
-    }, 150)
-
-    return () => clearInterval(interval)
-  }, [onFinished])
+    if (progress >= 100) {
+      const timer = setTimeout(() => {
+        setShouldHide(true)
+        setTimeout(() => onFinished?.(), 800)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [progress, onFinished])
 
   return (
-    <div className={`loading-screen ${hidden ? 'hidden' : ''}`}>
+    <div className={`loading-screen ${shouldHide ? 'hidden' : ''}`}>
       <div className="loading-logo">IoT &amp; Robotics</div>
       <div className="loading-bar-track">
         <div
@@ -32,7 +22,7 @@ export default function LoadingScreen({ onFinished }) {
           style={{ width: `${Math.min(progress, 100)}%` }}
         />
       </div>
-      <div className="loading-text">Loading Experience...</div>
+      <div className="loading-text">Loading Assets {progress}%</div>
     </div>
   )
 }
