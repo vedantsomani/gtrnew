@@ -25,6 +25,7 @@ export default function App() {
   const [loadProgress, setLoadProgress] = useState(0)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [isMobile, setIsMobile] = useState(() => detectMobile())
+  const basePath = import.meta.env.BASE_URL || '/'
 
   // Re-detect on resize
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function App() {
     setScrollProgress(p)
   }, [])
 
-  const sequencePath = isMobile ? '/frames/phone/' : '/frames/pc/'
+  const sequencePath = `${basePath}frames/${isMobile ? 'phone' : 'pc'}/`
 
   return (
     <>

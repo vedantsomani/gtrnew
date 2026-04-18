@@ -9,12 +9,15 @@ export default function WebPSequence({ sequencePath = '/frames/pc/', onProgress,
   const canvasRef = useRef(null)
   const imagesRef = useRef([])
   const [isReady, setIsReady] = useState(false)
+  const lastDrawableIndexRef = useRef(0)
   
   const progressRef = useRef(0)        // current (lerped)
   const targetProgressRef = useRef(0)  // target from scroll
   const lastReportedRef = useRef(-1)
   
   const TOTAL_FRAMES = 480
+  const READY_FRAME_COUNT = 24
+  const READY_TIMEOUT_MS = 15000
 
   // 1. Preload images
   useEffect(() => {
@@ -22,9 +25,39 @@ export default function WebPSequence({ sequencePath = '/frames/pc/', onProgress,
     
     // Reset state for new sequence
     setIsReady(false)
+    lastDrawableIndexRef.current = 0
     imagesRef.current = []
     let loadedCount = 0
     const images = []
+    let isCancelled = false
+    let hasReportedReady = false
+
+    const reportReady = () => {
+      if (isCancelled || hasReportedReady) return
+      hasReportedReady = true
+      console.log('[WebPSequence] Initial frames are ready. Rendering started.')
+      setIsReady(true)
+      onLoaded?.()
+    }
+
+    const readyTimer = window.setTimeout(() => {
+      console.warn('[WebPSequence] Ready timeout reached, continuing with partial frames.')
+      reportReady()
+    }, READY_TIMEOUT_MS)
+
+    const handleSettled = () => {
+      loadedCount++
+      onLoadProgress?.(Math.round((loadedCount / TOTAL_FRAMES) * 100))
+
+      if (!hasReportedReady && loadedCount >= READY_FRAME_COUNT) {
+        reportReady()
+      }
+
+      if (loadedCount === TOTAL_FRAMES) {
+        console.log(`[WebPSequence] Sequence "${sequencePath}" fully loaded.`)
+        reportReady()
+      }
+    }
 
     for (let i = 1; i <= TOTAL_FRAMES; i++) {
       const img = new Image()
@@ -32,26 +65,20 @@ export default function WebPSequence({ sequencePath = '/frames/pc/', onProgress,
       img.src = `${sequencePath}${frameStr}.webp`
       
       img.onload = () => {
-        loadedCount++
-        onLoadProgress?.(Math.round((loadedCount / TOTAL_FRAMES) * 100))
-        if (loadedCount === TOTAL_FRAMES) {
-          console.log(`[WebPSequence] ✓ Sequence "${sequencePath}" loaded.`)
-          setIsReady(true)
-          onLoaded?.()
-        }
+        handleSettled()
       }
       img.onerror = () => {
         console.error(`[WebPSequence] ✗ Failed to load frame: ${frameStr} in ${sequencePath}`)
-        loadedCount++
-        onLoadProgress?.(Math.round((loadedCount / TOTAL_FRAMES) * 100))
-        if (loadedCount === TOTAL_FRAMES) {
-          setIsReady(true)
-          onLoaded?.()
-        }
+        handleSettled()
       }
       images.push(img)
     }
     imagesRef.current = images
+
+    return () => {
+      isCancelled = true
+      window.clearTimeout(readyTimer)
+    }
   }, [sequencePath, onLoaded, onLoadProgress])
 
   // 2. Scroll/Touch Listeners (Same logic as Scene.jsx)
@@ -110,12 +137,21 @@ export default function WebPSequence({ sequencePath = '/frames/pc/', onProgress,
       )
       
       const img = imagesRef.current[frameIndex]
-      if (img && img.complete) {
+      const fallback = imagesRef.current[lastDrawableIndexRef.current]
+      const drawable = img && img.complete && img.naturalWidth > 0
+        ? img
+        : (fallback && fallback.complete && fallback.naturalWidth > 0 ? fallback : null)
+
+      if (drawable) {
+        if (drawable === img) {
+          lastDrawableIndexRef.current = frameIndex
+        }
+
         // Clear and draw
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         
         const canvasAspect = canvas.width / canvas.height
-        const imgAspect = img.width / img.height
+        const imgAspect = drawable.width / drawable.height
         
         let drawWidth, drawHeight, offsetX, offsetY
         
@@ -132,7 +168,7 @@ export default function WebPSequence({ sequencePath = '/frames/pc/', onProgress,
           offsetY = 0
         }
 
-        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
+        ctx.drawImage(drawable, offsetX, offsetY, drawWidth, drawHeight)
       }
 
       // Report progress to parent
